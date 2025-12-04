@@ -43,10 +43,10 @@ const CommunautePage = () => {
         <div className="flex items-start gap-3">
           <div className="text-2xl">🌬️</div>
           <div>
-            <h4 className="font-medium text-foreground text-sm">
+            <h4 className="font-bold text-foreground text-sm">
               {activeRegion === 'france' 
                 ? 'Ensemble, nous produisons de l\'énergie verte !'
-                : `${regionData.fullName} : une région dynamique !`
+                : `${regionData.name} : une région dynamique !`
               }
             </h4>
             <p className="text-xs text-muted-foreground mt-1">

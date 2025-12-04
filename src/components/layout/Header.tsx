@@ -1,6 +1,7 @@
 import { Menu, User } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import logoHorizontal from '@/assets/logo-bonvan-horizontal.png';
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -39,18 +40,13 @@ const Header = () => {
           </SheetContent>
         </Sheet>
 
-        {/* Logo Bonvan */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center">
-            <svg 
-              viewBox="0 0 24 24" 
-              className="w-5 h-5 text-primary-foreground"
-              fill="currentColor"
-            >
-              <path d="M12 2C12 2 8 6 8 12C8 14.5 9 17 12 17C15 17 16 14.5 16 12C16 6 12 2 12 2ZM12 4.5C13.5 7 14 9 14 12C14 13.5 13.5 15 12 15C10.5 15 10 13.5 10 12C10 9 10.5 7 12 4.5ZM4 14L8 22H6L2 14H4ZM20 14L16 22H18L22 14H20Z"/>
-            </svg>
-          </div>
-          <span className="font-semibold text-lg text-foreground">Bonvan</span>
+        {/* Logo Bonvan horizontal */}
+        <div className="flex items-center justify-center">
+          <img 
+            src={logoHorizontal} 
+            alt="Bonvan - L'éolien à portée de main" 
+            className="h-8 w-auto"
+          />
         </div>
 
         {/* Avatar utilisateur */}
