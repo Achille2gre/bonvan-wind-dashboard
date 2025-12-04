@@ -24,7 +24,7 @@ const SegmentedTabs = ({ tabs, activeTab, onTabChange }: SegmentedTabsProps) => 
             className={cn(
               "flex-1 py-2 px-4 text-sm font-medium rounded-lg transition-all duration-200",
               isActive 
-                ? "bg-card text-foreground shadow-sm" 
+                ? "bg-card text-primary shadow-sm" 
                 : "text-muted-foreground hover:text-foreground"
             )}
           >

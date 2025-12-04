@@ -27,15 +27,15 @@ const SummaryPanel = ({
       icon: Zap,
       value: formatNumber(annualProduction),
       label: 'kWh/an produits',
-      color: 'text-secondary',
-      bgColor: 'bg-secondary-light',
+      color: 'text-accent',
+      bgColor: 'bg-accent-light',
     },
     {
       icon: Leaf,
       value: formatNumber(co2Avoided),
       label: 'tCO₂e évitées',
-      color: 'text-primary',
-      bgColor: 'bg-primary-light',
+      color: 'text-secondary',
+      bgColor: 'bg-secondary-light',
     },
   ];
 
@@ -44,7 +44,7 @@ const SummaryPanel = ({
       "bg-card rounded-xl p-4 shadow-card",
       className
     )}>
-      <h3 className="font-semibold text-foreground mb-4">Bilan de la communauté</h3>
+      <h3 className="font-bold text-foreground mb-4">Bilan de la communauté</h3>
       
       <div className="grid grid-cols-3 gap-3">
         {stats.map((stat, index) => {

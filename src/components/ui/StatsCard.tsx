@@ -34,10 +34,10 @@ const variantStyles = {
     accent: 'text-secondary',
   },
   autoconsumption: {
-    bg: 'bg-purple-50',
-    iconBg: 'bg-purple-500/20',
-    iconColor: 'text-purple-600',
-    accent: 'text-purple-600',
+    bg: 'bg-accent2-light',
+    iconBg: 'bg-accent2/20',
+    iconColor: 'text-accent2',
+    accent: 'text-accent2',
   },
   default: {
     bg: 'bg-muted',
