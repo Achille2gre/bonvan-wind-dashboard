@@ -1,116 +1,162 @@
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+import { cn } from "@/lib/utils";
 
 interface FranceMapProps {
-  activeRegion: string;
-  onRegionSelect: (regionId: string) => void;
+  /** Macro-région sélectionnée : "france" | "nord-ouest" | "nord-est" | "centre" | "sud-ouest" | "sud-est" */
+  activeMacro: string;
+  /** Code INSEE de la région réelle cliquée (ex: "84" pour AURA). Null si vue France. */
+  activeRegionCode: string | null;
+  /** Callback quand l’utilisateur clique une région réelle */
+  onSelect: (regionCode: string, macroId: string, regionName: string) => void;
 }
 
-// SVG réaliste de la France métropolitaine avec 5 grandes régions
-const regions = [
-  {
-    id: 'nord-ouest',
-    name: 'Nord-Ouest',
-    // Bretagne + Normandie + Pays de la Loire
-    path: 'M 85 95 L 110 75 L 145 70 L 175 80 L 180 95 L 175 115 L 160 135 L 140 150 L 110 155 L 80 145 L 60 125 L 55 105 Z',
-  },
-  {
-    id: 'nord-est',
-    name: 'Nord-Est',
-    // Hauts-de-France + Grand Est + Île-de-France
-    path: 'M 180 50 L 220 45 L 260 55 L 285 75 L 290 110 L 275 145 L 245 160 L 210 155 L 180 140 L 175 115 L 180 95 L 175 80 Z',
-  },
-  {
-    id: 'centre',
-    name: 'Centre',
-    // Centre-Val de Loire + Bourgogne-Franche-Comté
-    path: 'M 140 150 L 175 140 L 210 155 L 245 160 L 250 190 L 240 220 L 210 235 L 175 240 L 145 225 L 130 195 L 125 165 Z',
-  },
-  {
-    id: 'sud-ouest',
-    name: 'Sud-Ouest',
-    // Nouvelle-Aquitaine + Occitanie Ouest
-    path: 'M 80 145 L 125 165 L 130 195 L 145 225 L 140 260 L 125 295 L 100 320 L 75 310 L 55 285 L 50 245 L 55 200 L 65 165 Z',
-  },
-  {
-    id: 'sud-est',
-    name: 'Sud-Est',
-    // Auvergne-Rhône-Alpes + PACA + Occitanie Est
-    path: 'M 175 240 L 210 235 L 240 220 L 275 225 L 295 250 L 290 285 L 265 315 L 225 330 L 180 320 L 145 300 L 125 295 L 140 260 L 145 225 Z',
-  },
-];
+// Chemin robuste (fonctionne même si BASE_URL change)
+const GEO_URL = `${import.meta.env.BASE_URL}maps/france-regions.geojson`;
 
-const FranceMap = ({ activeRegion, onRegionSelect }: FranceMapProps) => {
+/**
+ * Mapping "vraies régions" -> tes 5 macro-régions actuelles.
+ * Codes INSEE :
+ * 11 IDF, 24 CVL, 27 BFC, 28 Normandie, 32 HDF, 44 Grand Est, 52 Pays de la Loire,
+ * 53 Bretagne, 75 Nouvelle-Aquitaine, 76 Occitanie, 84 AURA, 93 PACA, 94 Corse
+ */
+const REGION_CODE_TO_MACRO: Record<string, string> = {
+  "53": "nord-ouest", // Bretagne
+  "28": "nord-ouest", // Normandie
+  "52": "nord-ouest", // Pays de la Loire
+
+  "32": "nord-est", // Hauts-de-France
+  "44": "nord-est", // Grand Est
+  "11": "nord-est", // Île-de-France
+
+  "24": "centre", // Centre-Val de Loire
+  "27": "centre", // Bourgogne-Franche-Comté
+
+  "75": "sud-ouest", // Nouvelle-Aquitaine
+  "76": "sud-ouest", // Occitanie
+
+  "84": "sud-est", // Auvergne-Rhône-Alpes
+  "93": "sud-est", // PACA
+  "94": "sud-est", // Corse
+};
+
+function extractRegionCode(props: any, geoId: any): string {
+  const rawCode =
+    props?.code ??
+    props?.CODE ??
+    props?.code_region ??
+    props?.insee_reg ??
+    props?.reg_code ??
+    props?.REG ??
+    geoId;
+
+  return String(rawCode);
+}
+
+function extractRegionName(props: any, fallback: string): string {
+  // Le nom exact dépend du GeoJSON. On prévoit plusieurs champs courants.
+  const rawName =
+    props?.nom ??
+    props?.NOM ??
+    props?.name ??
+    props?.NAME ??
+    props?.region_name ??
+    props?.REGION ??
+    props?.libelle ??
+    props?.LIBELLE ??
+    props?.label ??
+    props?.LABEL ??
+    "";
+
+  const name = String(rawName || "").trim();
+  return name.length > 0 ? name : fallback;
+}
+
+export default function FranceMap({ activeMacro, activeRegionCode, onSelect }: FranceMapProps) {
+  const [hoveredCode, setHoveredCode] = useState<string | null>(null);
+
+  const getFill = (code: string) => {
+    const isFranceView = activeMacro === "france";
+    const isHovered = hoveredCode === code;
+    const isSelected = activeRegionCode === code;
+
+    // Vue France : tout clair, hover un peu plus marqué
+    if (isFranceView) {
+      return isHovered ? "hsl(var(--primary) / 0.35)" : "hsl(var(--primary-light))";
+    }
+
+    // Vue macro : on veut UNE SEULE région colorée (celle cliquée)
+    if (activeRegionCode) {
+      if (isSelected) {
+        return isHovered ? "hsl(var(--primary) / 0.9)" : "hsl(var(--primary))";
+      }
+      return isHovered ? "hsl(var(--primary) / 0.2)" : "hsl(var(--muted))";
+    }
+
+    // Fallback (si jamais macro sélectionnée mais pas de régionCode)
+    const macro = REGION_CODE_TO_MACRO[code];
+    const isInMacro = macro === activeMacro;
+    if (isInMacro) {
+      return isHovered ? "hsl(var(--primary) / 0.85)" : "hsl(var(--primary))";
+    }
+    return isHovered ? "hsl(var(--primary) / 0.2)" : "hsl(var(--muted))";
+  };
+
   return (
-    <div className="relative w-full aspect-square max-w-xs mx-auto">
-      <svg 
-        viewBox="40 30 270 320" 
+    <div className="relative w-full aspect-[4/3] max-w-md mx-auto">
+      <ComposableMap
+        projection="geoMercator"
+        projectionConfig={{
+          center: [2.2, 46.4],
+          scale: 2100,
+        }}
         className="w-full h-full"
-        style={{ filter: 'drop-shadow(0 4px 8px rgba(26, 151, 131, 0.15))' }}
       >
-        {/* Contour de la France */}
-        <defs>
-          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="hsl(var(--primary))" floodOpacity="0.2"/>
-          </filter>
-        </defs>
+        <Geographies geography={GEO_URL}>
+          {({ geographies }) =>
+            geographies.map((geo) => {
+              const props: any = geo.properties ?? {};
+              const code = extractRegionCode(props, geo.id);
+              const macro = REGION_CODE_TO_MACRO[code] ?? "france";
 
-        {/* Régions */}
-        {regions.map((region) => {
-          const isActive = activeRegion === region.id;
-          const isFranceSelected = activeRegion === 'france';
-          
-          return (
-            <g key={region.id}>
-              <path
-                d={region.path}
-                className={cn(
-                  "cursor-pointer transition-all duration-300",
-                  "stroke-card stroke-2"
-                )}
-                fill={isActive ? 'hsl(var(--primary))' : isFranceSelected ? 'hsl(var(--primary-light))' : 'hsl(var(--muted))'}
-                onClick={() => onRegionSelect(region.id)}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.fill = 'hsl(var(--primary) / 0.4)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.fill = isFranceSelected ? 'hsl(var(--primary-light))' : 'hsl(var(--muted))';
-                  }
-                }}
-                filter="url(#shadow)"
-              />
-              {/* Nom de la région */}
-              {isActive && (
-                <text
-                  x={region.id === 'nord-ouest' ? 110 : region.id === 'nord-est' ? 220 : region.id === 'centre' ? 185 : region.id === 'sud-ouest' ? 95 : 210}
-                  y={region.id === 'nord-ouest' ? 115 : region.id === 'nord-est' ? 105 : region.id === 'centre' ? 195 : region.id === 'sud-ouest' ? 235 : 275}
-                  className="text-[10px] font-bold fill-primary-foreground pointer-events-none"
-                  textAnchor="middle"
-                >
-                  {region.name}
-                </text>
-              )}
-            </g>
-          );
-        })}
+              // Fallback lisible si le GeoJSON n'a pas de nom exploitable
+              const fallbackName =
+                code === "84"
+                  ? "Auvergne-Rhône-Alpes"
+                  : code === "93"
+                    ? "Provence-Alpes-Côte d'Azur"
+                    : code === "94"
+                      ? "Corse"
+                      : `Région ${code}`;
 
-        {/* Corse (petite île) */}
-        <ellipse
-          cx="305"
-          cy="310"
-          rx="12"
-          ry="22"
-          className="cursor-pointer transition-all duration-300 stroke-card stroke-2"
-          fill={activeRegion === 'france' ? 'hsl(var(--primary-light))' : 'hsl(var(--muted))'}
-        />
-      </svg>
+              const regionName = extractRegionName(props, fallbackName);
 
-      {/* Bouton pour revenir à la vue France */}
-      {activeRegion !== 'france' && (
+              return (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  onClick={() => onSelect(code, macro, regionName)}
+                  onMouseEnter={() => setHoveredCode(code)}
+                  onMouseLeave={() => setHoveredCode(null)}
+                  fill={getFill(code)}
+                  stroke="hsl(var(--card))"
+                  strokeWidth={2}
+                  className={cn("cursor-pointer transition-colors duration-200")}
+                  style={{
+                    default: { outline: "none" },
+                    hover: { outline: "none" },
+                    pressed: { outline: "none" },
+                  }}
+                />
+              );
+            })
+          }
+        </Geographies>
+      </ComposableMap>
+
+      {activeMacro !== "france" && (
         <button
-          onClick={() => onRegionSelect('france')}
+          onClick={() => onSelect("", "france", "France")}
           className="absolute top-2 left-2 px-3 py-1.5 text-xs font-medium bg-card rounded-lg shadow-md hover:bg-muted transition-colors border border-border"
         >
           ← France
@@ -118,6 +164,4 @@ const FranceMap = ({ activeRegion, onRegionSelect }: FranceMapProps) => {
       )}
     </div>
   );
-};
-
-export default FranceMap;
+}
