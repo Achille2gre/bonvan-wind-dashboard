@@ -23,7 +23,7 @@ const steps: { id: StepId; title: string; subtitle: string }[] = [
   {
     id: "notifications",
     title: "Notifications",
-    subtitle: "Tu choisis la fréquence et le moment",
+    subtitle: "Active-les pour recevoir des conseils personnalisés",
   },
 ];
 
@@ -222,7 +222,7 @@ export function OnboardingWizard({
                 />
               </div>
 
-              <FieldLabel label="Conso plutôt…" />
+              <FieldLabel label="Je consomme plutôt" />
               <div className="grid grid-cols-2 gap-2">
                 <ChoiceButton
                   active={answers.usagePeak === "morning"}
@@ -247,117 +247,33 @@ export function OnboardingWizard({
                   label="Variable"
                 />
               </div>
-
-              <FieldLabel label="Objectif principal" />
-              <div className="grid grid-cols-2 gap-2">
-                <ChoiceButton
-                  active={answers.goal === "save_money"}
-                  onClick={() => setAnswers((a) => ({ ...a, goal: "save_money" }))}
-                  label="Économiser"
-                />
-                <ChoiceButton
-                  active={answers.goal === "reduce_co2"}
-                  onClick={() => setAnswers((a) => ({ ...a, goal: "reduce_co2" }))}
-                  label="CO₂"
-                />
-                <ChoiceButton
-                  active={answers.goal === "autonomy"}
-                  onClick={() => setAnswers((a) => ({ ...a, goal: "autonomy" }))}
-                  label="Autonomie"
-                />
-                <ChoiceButton
-                  active={answers.goal === "understand"}
-                  onClick={() => setAnswers((a) => ({ ...a, goal: "understand" }))}
-                  label="Comprendre"
-                />
-              </div>
             </div>
           )}
 
           {step.id === "notifications" && (
-            <div className="space-y-4">
-              <ToggleRow
-                label="J’accepte d’activer les notifications"
-                checked={answers.allowNotifications}
-                onChange={(v) =>
-                  setAnswers((a) => ({
-                    ...a,
-                    allowNotifications: v,
-                    notifyFrequency: v ? a.notifyFrequency : "none",
-                  }))
-                }
-              />
-
-              {answers.allowNotifications && (
-                <>
-                  <FieldLabel label="Fréquence" />
-                  <div className="grid grid-cols-2 gap-2">
-                    <ChoiceButton
-                      active={answers.notifyFrequency === "daily"}
-                      onClick={() =>
-                        setAnswers((a) => ({ ...a, notifyFrequency: "daily" }))
-                      }
-                      label="Quotidien"
-                    />
-                    <ChoiceButton
-                      active={answers.notifyFrequency === "weekly"}
-                      onClick={() =>
-                        setAnswers((a) => ({ ...a, notifyFrequency: "weekly" }))
-                      }
-                      label="Hebdo"
-                    />
-                    <ChoiceButton
-                      active={answers.notifyFrequency === "alerts_only"}
-                      onClick={() =>
-                        setAnswers((a) => ({
-                          ...a,
-                          notifyFrequency: "alerts_only",
-                        }))
-                      }
-                      label="Alertes"
-                    />
-                    <ChoiceButton
-                      active={answers.notifyFrequency === "none"}
-                      onClick={() =>
-                        setAnswers((a) => ({ ...a, notifyFrequency: "none" }))
-                      }
-                      label="Aucune"
-                    />
+          <div className="space-y-4">
+            <ToggleRow
+              label={
+                <div className="space-y-1">
+                  <div className="text-sm font-medium">Activer les notifications</div>
+                  <div className="text-sm text-muted-foreground leading-snug">
+                    Cela nous permettra de te transmettre des conseils de consommation personnalisés
+                    pour optimiser ton autoconsommation
                   </div>
-
-                  <FieldLabel label="Moment" />
-                  <div className="grid grid-cols-2 gap-2">
-                    <ChoiceButton
-                      active={answers.notifyTime === "morning"}
-                      onClick={() =>
-                        setAnswers((a) => ({ ...a, notifyTime: "morning" }))
-                      }
-                      label="Matin"
-                    />
-                    <ChoiceButton
-                      active={answers.notifyTime === "midday"}
-                      onClick={() =>
-                        setAnswers((a) => ({ ...a, notifyTime: "midday" }))
-                      }
-                      label="Midi"
-                    />
-                    <ChoiceButton
-                      active={answers.notifyTime === "evening"}
-                      onClick={() =>
-                        setAnswers((a) => ({ ...a, notifyTime: "evening" }))
-                      }
-                      label="Soir"
-                    />
-                    <ChoiceButton
-                      active={answers.notifyTime === "any"}
-                      onClick={() => setAnswers((a) => ({ ...a, notifyTime: "any" }))}
-                      label="Peu importe"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          )}
+                </div>
+              }
+              checked={answers.allowNotifications}
+              onChange={(v) =>
+                setAnswers((a) => ({
+                  ...a,
+                  allowNotifications: v,
+                  notifyFrequency: v ? "weekly" : "none",
+                  notifyTime: v ? "any" : null,
+                }))
+              }
+            />
+          </div>
+        )}
         </div>
 
         <div className="p-6 border-t flex items-center justify-between gap-3">
@@ -437,24 +353,25 @@ function ToggleRow({
   checked,
   onChange,
 }: {
-  label: string;
+  label: React.ReactNode; // ✅ au lieu de string
   checked: boolean;
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border p-4">
-      <div className="text-sm font-medium">{label}</div>
+    <div className="flex items-start justify-between gap-4 rounded-xl border p-4">
+      <div className="flex-1 min-w-0">{label}</div>
+
       <button
         type="button"
         className={[
-          "h-9 w-16 rounded-full border relative transition",
+          "h-9 w-16 rounded-full border relative transition mt-1",
           checked ? "bg-primary border-primary" : "bg-muted",
         ].join(" ")}
         onClick={() => onChange(!checked)}
       >
         <span
           className={[
-            "absolute top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-background border transition",
+            "absolute top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-background border transition shadow-sm",
             checked ? "left-8" : "left-1",
           ].join(" ")}
         />
