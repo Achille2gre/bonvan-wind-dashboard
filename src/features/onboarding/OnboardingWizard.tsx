@@ -2,13 +2,18 @@ import { useMemo, useState } from "react";
 import type { OnboardingAnswers } from "./types";
 import { defaultAnswers, saveOnboarding, skipOnboarding } from "./storage";
 
-type StepId = "profile" | "equipments" | "contract" | "notifications";
+type StepId = "profile" | "fleet" | "equipments" | "contract" | "notifications";
 
 const steps: { id: StepId; title: string; subtitle: string }[] = [
   {
     id: "profile",
     title: "Ton profil énergie",
     subtitle: "Quelques infos pour personnaliser tes conseils",
+  },
+  {
+    id: "fleet",
+    title: "Ma flotte",
+    subtitle: "Éoliennes Bonvan associées à ton compte",
   },
   {
     id: "equipments",
@@ -36,7 +41,10 @@ export function OnboardingWizard({
   const [answers, setAnswers] = useState<OnboardingAnswers>(defaultAnswers);
 
   const step = steps[stepIndex];
-  const progress = useMemo(() => ((stepIndex + 1) / steps.length) * 100, [stepIndex]);
+  const progress = useMemo(
+    () => ((stepIndex + 1) / steps.length) * 100,
+    [stepIndex]
+  );
 
   function next() {
     setStepIndex((i) => Math.min(i + 1, steps.length - 1));
@@ -57,11 +65,13 @@ export function OnboardingWizard({
   }
 
   const canFinish = useMemo(() => {
-    // On force juste 2-3 champs minimum pour une V1 “propre”
+    // V1 minimale "propre"
     return (
       answers.dwellingType !== null &&
       answers.heatingType !== null &&
-      answers.tariff !== null
+      answers.tariff !== null &&
+      answers.turbinesCount !== null &&
+      answers.ownershipModel !== null
     );
   }, [answers]);
 
@@ -96,9 +106,7 @@ export function OnboardingWizard({
                 />
                 <ChoiceButton
                   active={answers.dwellingType === "apartment"}
-                  onClick={() =>
-                    setAnswers((a) => ({ ...a, dwellingType: "apartment" }))
-                  }
+                  onClick={() => setAnswers((a) => ({ ...a, dwellingType: "apartment" }))}
                   label="Appartement"
                 />
                 <ChoiceButton
@@ -125,34 +133,11 @@ export function OnboardingWizard({
                 ))}
               </div>
 
-              <FieldLabel label="Climat (approx.)" />
-              <div className="grid grid-cols-3 gap-2">
-                <ChoiceButton
-                  active={answers.climate === "mild"}
-                  onClick={() => setAnswers((a) => ({ ...a, climate: "mild" }))}
-                  label="Doux"
-                />
-                <ChoiceButton
-                  active={answers.climate === "temperate"}
-                  onClick={() =>
-                    setAnswers((a) => ({ ...a, climate: "temperate" }))
-                  }
-                  label="Moyen"
-                />
-                <ChoiceButton
-                  active={answers.climate === "cold"}
-                  onClick={() => setAnswers((a) => ({ ...a, climate: "cold" }))}
-                  label="Froid"
-                />
-              </div>
-
               <FieldLabel label="Chauffage" />
               <div className="grid grid-cols-2 gap-2">
                 <ChoiceButton
                   active={answers.heatingType === "electric"}
-                  onClick={() =>
-                    setAnswers((a) => ({ ...a, heatingType: "electric" }))
-                  }
+                  onClick={() => setAnswers((a) => ({ ...a, heatingType: "electric" }))}
                   label="Électrique"
                 />
                 <ChoiceButton
@@ -162,15 +147,67 @@ export function OnboardingWizard({
                 />
                 <ChoiceButton
                   active={answers.heatingType === "heat_pump"}
-                  onClick={() =>
-                    setAnswers((a) => ({ ...a, heatingType: "heat_pump" }))
-                  }
+                  onClick={() => setAnswers((a) => ({ ...a, heatingType: "heat_pump" }))}
                   label="PAC"
                 />
                 <ChoiceButton
                   active={answers.heatingType === "wood"}
                   onClick={() => setAnswers((a) => ({ ...a, heatingType: "wood" }))}
                   label="Bois"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* ✅ NOUVEAU STEP : FLOTTE */}
+          {step.id === "fleet" && (
+            <div className="space-y-4">
+              <FieldLabel label="Nombre d’éoliennes" />
+              <div className="flex items-center gap-3 rounded-xl border p-4">
+                <button
+                  type="button"
+                  className="h-10 w-10 rounded-xl border hover:bg-muted"
+                  onClick={() =>
+                    setAnswers((a) => ({
+                      ...a,
+                      turbinesCount: Math.max(0, (a.turbinesCount ?? 0) - 1),
+                    }))
+                  }
+                >
+                  −
+                </button>
+
+                <div className="w-12 text-center text-lg font-semibold">
+                  {answers.turbinesCount ?? 0}
+                </div>
+
+                <button
+                  type="button"
+                  className="h-10 w-10 rounded-xl border hover:bg-muted"
+                  onClick={() =>
+                    setAnswers((a) => ({
+                      ...a,
+                      turbinesCount: (a.turbinesCount ?? 0) + 1,
+                    }))
+                  }
+                >
+                  +
+                </button>
+              </div>
+
+              <FieldLabel label="Modèle" />
+              <div className="grid grid-cols-2 gap-2">
+                <ChoiceButton
+                  active={answers.ownershipModel === "owner"}
+                  onClick={() => setAnswers((a) => ({ ...a, ownershipModel: "owner" }))}
+                  label="Propriétaire"
+                />
+                <ChoiceButton
+                  active={answers.ownershipModel === "third_party"}
+                  onClick={() =>
+                    setAnswers((a) => ({ ...a, ownershipModel: "third_party" }))
+                  }
+                  label="Tiers investisseur"
                 />
               </div>
             </div>
@@ -241,9 +278,7 @@ export function OnboardingWizard({
                 />
                 <ChoiceButton
                   active={answers.usagePeak === "variable"}
-                  onClick={() =>
-                    setAnswers((a) => ({ ...a, usagePeak: "variable" }))
-                  }
+                  onClick={() => setAnswers((a) => ({ ...a, usagePeak: "variable" }))}
                   label="Variable"
                 />
               </div>
@@ -251,29 +286,29 @@ export function OnboardingWizard({
           )}
 
           {step.id === "notifications" && (
-          <div className="space-y-4">
-            <ToggleRow
-              label={
-                <div className="space-y-1">
-                  <div className="text-sm font-medium">Activer les notifications</div>
-                  <div className="text-sm text-muted-foreground leading-snug">
-                    Cela nous permettra de te transmettre des conseils de consommation personnalisés
-                    pour optimiser ton autoconsommation
+            <div className="space-y-4">
+              <ToggleRow
+                label={
+                  <div className="space-y-1">
+                    <div className="text-sm font-medium">Activer les notifications</div>
+                    <div className="text-sm text-muted-foreground leading-snug">
+                      Cela nous permettra de te transmettre des conseils de consommation personnalisés
+                      pour optimiser ton autoconsommation
+                    </div>
                   </div>
-                </div>
-              }
-              checked={answers.allowNotifications}
-              onChange={(v) =>
-                setAnswers((a) => ({
-                  ...a,
-                  allowNotifications: v,
-                  notifyFrequency: v ? "weekly" : "none",
-                  notifyTime: v ? "any" : null,
-                }))
-              }
-            />
-          </div>
-        )}
+                }
+                checked={answers.allowNotifications}
+                onChange={(v) =>
+                  setAnswers((a) => ({
+                    ...a,
+                    allowNotifications: v,
+                    notifyFrequency: v ? "weekly" : "none",
+                    notifyTime: v ? "any" : null,
+                  }))
+                }
+              />
+            </div>
+          )}
         </div>
 
         <div className="p-6 border-t flex items-center justify-between gap-3">
@@ -340,7 +375,9 @@ function ChoiceButton({
       onClick={onClick}
       className={[
         "h-10 px-3 rounded-xl border text-sm",
-        active ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted",
+        active
+          ? "bg-primary text-primary-foreground border-primary"
+          : "hover:bg-muted",
       ].join(" ")}
     >
       {label}
@@ -353,7 +390,7 @@ function ToggleRow({
   checked,
   onChange,
 }: {
-  label: React.ReactNode; // ✅ au lieu de string
+  label: React.ReactNode;
   checked: boolean;
   onChange: (v: boolean) => void;
 }) {

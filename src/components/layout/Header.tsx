@@ -1,10 +1,18 @@
-import { Menu, User } from 'lucide-react';
-import { useState } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import logoHorizontal from '@/assets/logo-bonvan-horizontal.png';
+import { Menu, User } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import logoHorizontal from "@/assets/logo-bonvan-horizontal.png";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-b border-border">
@@ -12,47 +20,70 @@ const Header = () => {
         {/* Menu burger */}
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
-            <button 
+            <button
               className="p-2 rounded-lg hover:bg-muted transition-colors"
               aria-label="Menu"
             >
               <Menu className="h-5 w-5 text-foreground" />
             </button>
           </SheetTrigger>
+
           <SheetContent side="left" className="w-72">
             <SheetHeader>
               <SheetTitle className="text-left">Menu</SheetTitle>
             </SheetHeader>
+
             <nav className="mt-6 flex flex-col gap-2">
-              <a href="#" className="px-4 py-3 rounded-lg hover:bg-muted transition-colors text-foreground">
-                Mon profil
-              </a>
-              <a href="#" className="px-4 py-3 rounded-lg hover:bg-muted transition-colors text-foreground">
+              <button
+                type="button"
+                className="px-4 py-3 rounded-lg hover:bg-muted transition-colors text-foreground text-left"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/settings");
+                }}
+              >
                 Paramètres
-              </a>
-              <a href="#" className="px-4 py-3 rounded-lg hover:bg-muted transition-colors text-foreground">
+              </button>
+
+              <button
+                type="button"
+                className="px-4 py-3 rounded-lg hover:bg-muted transition-colors text-foreground text-left"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/support");
+                }}
+              >
                 Aide & Support
-              </a>
-              <a href="#" className="px-4 py-3 rounded-lg hover:bg-muted transition-colors text-foreground">
+              </button>
+
+              <button
+                type="button"
+                className="px-4 py-3 rounded-lg hover:bg-muted transition-colors text-foreground text-left"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/about");
+                }}
+              >
                 À propos de Bonvan
-              </a>
+              </button>
             </nav>
           </SheetContent>
         </Sheet>
 
         {/* Logo Bonvan horizontal */}
         <div className="flex items-center justify-center">
-          <img 
-            src={logoHorizontal} 
-            alt="Bonvan - L'éolien à portée de main" 
+          <img
+            src={logoHorizontal}
+            alt="Bonvan - L'éolien à portée de main"
             className="h-8 w-auto"
           />
         </div>
 
         {/* Avatar utilisateur */}
-        <button 
+        <button
           className="p-2 rounded-lg hover:bg-muted transition-colors"
-          aria-label="Profil"
+          aria-label="Mon profil"
+          onClick={() => navigate("/profile")}
         >
           <div className="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center">
             <User className="h-4 w-4 text-primary" />

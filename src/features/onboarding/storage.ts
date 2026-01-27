@@ -1,6 +1,11 @@
 import type { OnboardingAnswers } from "./types";
 
 const STORAGE_KEY = "bonvan:onboarding:v1";
+export const ONBOARDING_CHANGED_EVENT = "bonvan:onboarding:changed";
+
+function emitChanged() {
+  window.dispatchEvent(new Event(ONBOARDING_CHANGED_EVENT));
+}
 
 export interface OnboardingStorage {
   completed: boolean;
@@ -11,7 +16,6 @@ export interface OnboardingStorage {
 export const defaultAnswers: OnboardingAnswers = {
   dwellingType: null,
   peopleCount: null,
-  climate: null,
 
   heatingType: null,
   waterHeatingType: null,
@@ -24,6 +28,9 @@ export const defaultAnswers: OnboardingAnswers = {
   usagePeak: null,
 
   goal: null,
+
+  turbinesCount: 1,
+  ownershipModel: "owner",
 
   allowNotifications: false,
   notifyFrequency: null,
@@ -53,6 +60,7 @@ export function saveOnboarding(answers: OnboardingAnswers) {
     answers,
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  emitChanged();
 }
 
 export function skipOnboarding() {
@@ -61,8 +69,30 @@ export function skipOnboarding() {
     completedAt: new Date().toISOString(),
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  emitChanged();
+}
+
+// ✅ Nouveau : update partiel (utile pour Profil)
+export function patchOnboarding(patch: Partial<OnboardingAnswers>) {
+  const current = loadOnboarding();
+
+  const mergedAnswers: OnboardingAnswers = {
+    ...defaultAnswers,
+    ...(current.answers ?? {}),
+    ...patch,
+  };
+
+  const payload: OnboardingStorage = {
+    completed: true,
+    completedAt: current.completedAt ?? new Date().toISOString(),
+    answers: mergedAnswers,
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  emitChanged();
 }
 
 export function resetOnboarding() {
   localStorage.removeItem(STORAGE_KEY);
+  emitChanged();
 }

@@ -26,10 +26,14 @@ export type MainGoal = "save_money" | "reduce_co2" | "autonomy" | "understand";
 export type NotifyFrequency = "daily" | "weekly" | "alerts_only" | "none";
 export type NotifyTime = "morning" | "midday" | "evening" | "any";
 
+export type OwnershipModel = "owner" | "third_party";
+
 export interface OnboardingAnswers {
+  turbinesCount: number | null;
+  ownershipModel: OwnershipModel | null;
+
   dwellingType: DwellingType | null;
   peopleCount: number | null; // 1..6 (6 = "6+")
-  climate: ClimateType | null;
 
   heatingType: HeatingType | null;
   waterHeatingType: WaterHeatingType | null;

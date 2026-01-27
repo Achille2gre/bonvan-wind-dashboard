@@ -1,23 +1,44 @@
-import { useState } from 'react';
-import Header from '@/components/layout/Header';
-import BottomNav from '@/components/layout/BottomNav';
-import PerformancesPage from '@/pages/PerformancesPage';
-import PrevisionsPage from '@/pages/PrevisionsPage';
-import HistoriquePage from '@/pages/HistoriquePage';
-import CommunautePage from '@/pages/CommunautePage';
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import AppShell from "@/components/layout/AppShell";
+import PerformancesPage from "@/pages/PerformancesPage";
+import PrevisionsPage from "@/pages/PrevisionsPage";
+import HistoriquePage from "@/pages/HistoriquePage";
+import CommunautePage from "@/pages/CommunautePage";
+
+const ALLOWED_TABS = ["performances", "previsions", "historique", "communaute"] as const;
+type Tab = (typeof ALLOWED_TABS)[number];
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState('performances');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const initialTab = (searchParams.get("tab") as Tab) || "performances";
+  const safeInitialTab: Tab = (ALLOWED_TABS.includes(initialTab) ? initialTab : "performances");
+
+  const [activeTab, setActiveTab] = useState<Tab>(safeInitialTab);
+
+  useEffect(() => {
+    const tab = (searchParams.get("tab") as Tab) || "performances";
+    if (ALLOWED_TABS.includes(tab) && tab !== activeTab) setActiveTab(tab);
+    if (!ALLOWED_TABS.includes(tab) && activeTab !== "performances") setActiveTab("performances");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const onTabChange = (tab: string) => {
+    const t = tab as Tab;
+    setActiveTab(t);
+    setSearchParams({ tab: t });
+  };
 
   const renderPage = () => {
     switch (activeTab) {
-      case 'performances':
+      case "performances":
         return <PerformancesPage />;
-      case 'previsions':
+      case "previsions":
         return <PrevisionsPage />;
-      case 'historique':
+      case "historique":
         return <HistoriquePage />;
-      case 'communaute':
+      case "communaute":
         return <CommunautePage />;
       default:
         return <PerformancesPage />;
@@ -25,18 +46,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
-      {/* Header fixe */}
-      <Header />
-      
-      {/* Contenu principal avec scroll */}
-      <main className="flex-1 overflow-y-auto pb-20">
-        {renderPage()}
-      </main>
-      
-      {/* Navigation bottom fixe */}
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
-    </div>
+    <AppShell activeTab={activeTab} onTabChange={onTabChange} showBottomNav>
+      {renderPage()}
+    </AppShell>
   );
 };
 
