@@ -62,7 +62,7 @@ export default function About() {
         <div className="mt-3 rounded-2xl border bg-card p-5 space-y-3">
           <p className="text-sm text-muted-foreground leading-relaxed">
             Aujourd’hui, Bonvan construit une solution qui complète le solaire et redonne
-            de la marge de manœuvre aux foyers et aux professionnels : produire une part
+            de la marge de manœuvre aux foyers et aux professionnels en le permettant de produire une part
             concrète de sa consommation, lisser sa dépendance au réseau, gagner en
             résilience. Notre ambition est claire : devenir un acteur majeur de
             l’autoconsommation en Europe et déployer des milliers d’éoliennes là où elles
