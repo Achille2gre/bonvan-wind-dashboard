@@ -83,7 +83,7 @@ export function EditSiteModal({ variant, open, onClose, value, onSave }: Props) 
 
             {/* ✅ Petite image (thumbnail) */}
             <div className="shrink-0">
-              <div className="w-[160px] h-[110px] rounded-xl border bg-background overflow-hidden flex items-center justify-center">
+              <div className="w-[160px] h-[110px] rounded-xl overflow-hidden flex items-center justify-center">
                 <img
                   src={headerImg}
                   alt=""
@@ -221,16 +221,12 @@ export function EditSiteModal({ variant, open, onClose, value, onSave }: Props) 
                         className="flex items-center justify-between rounded-xl border bg-background p-3"
                       >
                         <div className="text-sm font-medium">{it.label}</div>
-                        <input
-                          type="checkbox"
+                        <Toggle
                           checked={checked}
-                          onChange={(e) =>
+                          onChange={(v) =>
                             setDraft((d) => ({
                               ...d,
-                              equipments: {
-                                ...(d.equipments ?? {}),
-                                [it.k]: e.target.checked,
-                              },
+                              equipments: { ...(d.equipments ?? {}), [it.k]: v },
                             }))
                           }
                         />
@@ -371,5 +367,25 @@ export function EditSiteModal({ variant, open, onClose, value, onSave }: Props) 
         </div>
       </div>
     </div>
+  );
+}
+
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      className={[
+        "h-8 w-14 rounded-full border relative transition",
+        checked ? "bg-primary border-primary" : "bg-muted",
+      ].join(" ")}
+      onClick={() => onChange(!checked)}
+    >
+      <span
+        className={[
+          "absolute top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-background border transition shadow-sm",
+          checked ? "left-7" : "left-1",
+        ].join(" ")}
+      />
+    </button>
   );
 }

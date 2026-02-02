@@ -19,6 +19,16 @@ const REGION_NAME_TO_SHORT: Record<string, string> = {
   "Corse": "Corse",
 };
 
+// ✅ À remplacer par ta vraie “dernière newsletter”
+const LATEST_NEWSLETTER = {
+  title: "Newsletter Bonvan — Janvier 2026",
+  dateLabel: "29 janv. 2026",
+  excerpt:
+    "Actus produit, avancées terrain, partenaires, et prochaines étapes de déploiement. (Résumé court ici pour donner envie.)",
+  url: "https://bonvan-eolienne.com/", // mets ici l’URL exacte de la newsletter (Mailchimp archive / page web)
+  tag: "Dernière édition",
+};
+
 const CommunautePage = () => {
   // Macro-région pour les stats + textes (france | nord-ouest | nord-est | centre | sud-ouest | sud-est)
   const [activeMacro, setActiveMacro] = useState("france");
@@ -106,6 +116,47 @@ const CommunautePage = () => {
           👆 Cliquez sur une région pour voir le détail
         </p>
       )}
+
+      {/* ✅ Dernière newsletter (ajout en bas) */}
+      <div className="pt-2 space-y-2">
+        <div className="flex items-end justify-between">
+          <h2 className="text-base font-bold text-foreground">Dernière newsletter</h2>
+          <span className="text-xs text-muted-foreground">{LATEST_NEWSLETTER.dateLabel}</span>
+        </div>
+
+        <div className="bg-card rounded-xl p-4 shadow-card">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                  {LATEST_NEWSLETTER.tag}
+                </span>
+              </div>
+
+              <h3 className="mt-2 font-bold text-foreground text-sm truncate">
+                {LATEST_NEWSLETTER.title}
+              </h3>
+
+              <p className="mt-1 text-xs text-muted-foreground line-clamp-3">
+                {LATEST_NEWSLETTER.excerpt}
+              </p>
+            </div>
+
+            <div className="text-2xl shrink-0">📰</div>
+          </div>
+
+          <div className="mt-3 flex">
+            <a
+              href={LATEST_NEWSLETTER.url}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full text-center text-sm font-semibold rounded-lg px-3 py-2 bg-primary text-primary-foreground"
+            >
+              Lire la newsletter
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -447,20 +447,21 @@ const strongLoads = [
           subtitle="Conseils personnalisés et alertes"
           icon={<Bell className="h-5 w-5 text-primary" />}
           action={
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
+            <div className="flex items-center gap-2 text-sm">
+              <Toggle
                 checked={Boolean(s.allowNotifications)}
-                onChange={(e) =>
-                  setProfile((p) => ({ ...p, site: { ...(p.site ?? {}), allowNotifications: e.target.checked } }))
+                onChange={(v) =>
+                  setProfile((p) => ({
+                    ...p,
+                    site: { ...(p.site ?? {}), allowNotifications: v },
+                  }))
                 }
               />
-              <span>Activées</span>
-            </label>
+            </div>
           }
         >
           <div className="rounded-xl border bg-background p-3 text-sm text-muted-foreground">
-            Active les notifications pour recevoir des recommandations adaptées à ton profil de conso.
+            Active les notifications pour recevoir des recommandations adaptées à ton profil de conso
           </div>
         </SectionCard>
 
@@ -506,5 +507,26 @@ const strongLoads = [
         />
       </div>
     </AppShell>
+  );
+}
+
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      className={[
+        "h-9 w-16 rounded-full border relative transition",
+        checked ? "bg-primary border-primary" : "bg-muted",
+      ].join(" ")}
+      onClick={() => onChange(!checked)}
+      aria-pressed={checked}
+    >
+      <span
+        className={[
+          "absolute top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-background border transition shadow-sm",
+          checked ? "left-8" : "left-1",
+        ].join(" ")}
+      />
+    </button>
   );
 }
